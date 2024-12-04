@@ -6,7 +6,7 @@
 
 ## 目录结构
 
-![图片](C:\Users\JiangJiaSheng\Desktop\WorkProject\TheLastWarrior\README\01.png)
+![图片](\README\01.png)
 
 - Module **(第三方库文件)**
   - Axios **(前端http网络模块)**
@@ -70,7 +70,7 @@ class CcAssetManager {
 
 bundleName 为一个字符串参数，该字符串需要在编辑器中设置
 
-​		![](C:\Users\JiangJiaSheng\Desktop\WorkProject\TheLastWarrior\README\03.png)
+​		![](\README\03.png)
 
 选择一个文件夹，勾选 isBundle，输入BundleName，之后可以通过BundleName获取该文件夹下的资源
 
@@ -245,7 +245,7 @@ export default class MyComponent extends Extension.SpineAnimation {
 
 假设我们现在有一个新的物品图标
 
-![](C:\Users\JiangJiaSheng\Desktop\WorkProject\TheLastWarrior\README\FlameEnhancementStone.png)
+![](\README\FlameEnhancementStone.png)
 
 我们将它命名为 **君焰石** 作为一个物品，图片命名为 **FlameEnhancementStone.png**
 
@@ -295,7 +295,7 @@ export class FlameEnhancementStone extends ItemPrototype {
 
 我们现在又有一个新的物品图标
 
-![](C:\Users\JiangJiaSheng\Desktop\WorkProject\TheLastWarrior\README\cheat-pack.png)
+![](\README\cheat-pack.png)
 
 我们将它命名为 **作弊道具** 作为一个物品，图片命名为 **CheatPack.png**
 
@@ -376,16 +376,16 @@ export class UserBagItems {
 
 至此，我们就可以在游戏中看到
 
-![](C:\Users\JiangJiaSheng\Desktop\WorkProject\TheLastWarrior\README\04.png)
+![](\README\04.png)
 
 物品就出现了。**如果您没有找到对应的物品，可能是您之前进入游戏已经保存过了，只需要清除浏览器缓存(locaStorage)重新进入游戏即可!!!**
 
 这里我们就可以使用物品了
 
-![](C:\Users\JiangJiaSheng\Desktop\WorkProject\TheLastWarrior\README\05.png)
+![](\README\05.png)
 
 之后就可以看到我们的君焰石了
 
-![](C:\Users\JiangJiaSheng\Desktop\WorkProject\TheLastWarrior\README\06.png)
+![](\README\06.png)
 
 至此，物品的添加就先告一段落了。
