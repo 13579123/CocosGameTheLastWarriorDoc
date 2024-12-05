@@ -494,7 +494,7 @@ export class Macrotherapy extends SkillPrototype {
                 fightData.player , // 治疗来自谁
                 this.getCure() // 治疗量
             )
-            // 添加buff
+            // 添加 buff TODO
         }
         // 否则为怪物使用
         else {
@@ -504,7 +504,7 @@ export class Macrotherapy extends SkillPrototype {
                 if (!monster || monster.isDead) return
                 // 治疗怪物
                 monster.heal(this.skill.character , this.getCure())
-                // 添加buff
+                // 添加 buff TODO
             })
         }
     }
@@ -522,3 +522,247 @@ export class Macrotherapy extends SkillPrototype {
 ![](./README/07.png)
 
 之后就可以学习并且装配使用对应的技能了，接下来，我们去实现一个自定义的 Buff 来完善该技能增加双抗并且持续5s的功能。
+
+### 添加一个自己的BUFF
+
+游戏中的所有技能继承于最基础的技能原型类：BuffPrototype类，它位于 **根目录/Script/System/Prototype/BuffPrototype.ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义图标，介绍，用法等...
+
+### 第一个自定义的Buff
+
+假设我们现在有一个新的BUFF图标
+
+![](./README/Defense.png)
+
+我们将它命名为 **双抗提升** 作为一个BUFF，图片命名为 **Defense.png**
+
+我们先将它放入资源文件夹中 **根目录/Resource/Images/Buff** 下
+
+之后我们新创建脚本，将它创建在 **根目录/Script/Mod/Buff** 下，就命名为 Defense.ts
+
+代码内容为
+
+```typescript
+import { BuffPrototype, RegisterBuff } from "../../System/Prototype/BuffPrototype"
+
+// BUFF 属性枚举，可以自定义buff数据
+export enum BuffProperty {
+    Defense = "Defense", // 增加防御力
+    Resist = "Resist", // 增加抗性
+    Time = "Time", // 持续时间
+    AddTime = "AddTime", // 添加时间
+}
+
+// 注册 Buff
+@RegisterBuff("Defense")
+export class Defense extends BuffPrototype {
+
+    // Buff 名称
+    public name: string = "Defense"
+
+    // Buff 描述
+    public get description(): string {
+        return `增加 ${this.buff.data.get(BuffProperty.Defense) || 0} 防御力 ${this.buff.data.get(BuffProperty.Resist) || 0} 魔法抗性 `
+    }
+
+    // 增加的 防御 属性 这里先写着之后详解，总之这样属性就被加到角色身上去了
+    public get baseDefense(): number {
+        // 获取 Defense 属性的值
+        return this.buff.data.get(BuffProperty.Defense) || 0
+    }
+
+    // 增加的 抗性 属性 这里先写着之后详解，总之这样属性就被加到角色身上去了
+    public get baseResistance(): number {
+        // 获取 Resist 属性的值
+        return this.buff.data.get(BuffProperty.Resist) || 0
+    }
+
+    // Buff 被添加时的回调
+    public onAdd(): void {
+        console.log("Defense Buff 被添加")
+    }
+
+    // Buff 被移除时的回调
+    public onRemove(): void {
+        console.log("Defense Buff 被移除")
+    }
+
+    // 每一帧调用的函数
+    public update(dt: number): void {
+        // 检测 Buff 是否过期
+        if (Date.now() - this.buff.data.get(BuffProperty.AddTime) <= this.buff.data.get(BuffProperty.Time)) return
+        // 获取角色对象并移除 Buff
+        this.buff.master.removeBuff(this.buff)
+    }
+
+    // 必须将本身传给父类构造器
+    constructor() {
+        super(Defense)
+    }
+
+}
+```
+
+这样，我们的增加双抗Buff就定义完成了。
+
+### 完成完整的自定义技能
+
+接下来，我们完成之前没有完成的技能效果，来到 **根目录/Script/Mod/Skill/Macrotherapy.ts** 文件，为技能添加一个增加双抗的BUFF
+
+修改类中的 use 函数
+
+```typescript
+    public use(fightData: FightData): void {
+        // 如果 FightData 中的 player 属性为 当前技能的所属角色，则该技能为玩家使用
+        if (fightData.player === this.skill.character) {
+            // 只治疗玩家 heal 函数为 Character 类的方法，用于治疗角色
+            fightData.player.heal(
+                fightData.player , // 治疗来自谁
+                this.getCure() // 治疗量
+            )
+            // 创建buff实例
+            const buff = new Buff(
+                fightData.player , // buff 所属角色
+                this.skill.lv ,  // buff 等级
+                new Defense // buff 原型实例
+            )
+            // 设置数据
+            buff.data.set(BuffProperty.Defense , this.getLv() * 10)
+            buff.data.set(BuffProperty.Resist , this.getLv() * 10)
+            buff.data.set(BuffProperty.AddTime , Date.now())
+            buff.data.set(BuffProperty.Time , 5 * 1000)
+            // 添加buff
+            fightData.player.addBuff(buff)
+        }
+        // 否则为怪物使用
+        else {
+            // 遍历所有怪物
+            fightData.monsters.forEach(monster => {
+                // 如果怪物位为空或者怪物已经死亡
+                if (!monster || monster.isDead) return
+                // 治疗怪物
+                monster.heal(this.skill.character , this.getCure())
+                // 创建buff实例
+                const buff = new Buff(
+                    fightData.player , // buff 所属角色
+                    this.skill.lv ,  // buff 等级
+                    new Defense // buff 原型实例
+                )
+                // 设置数据
+                buff.data.set(BuffProperty.Defense , this.getLv() * 10)
+                buff.data.set(BuffProperty.Resist , this.getLv() * 10)
+                buff.data.set(BuffProperty.AddTime , Date.now())
+                buff.data.set(BuffProperty.Time , 5 * 1000)
+                // 添加buff
+                monster.addBuff(buff)
+            })
+        }
+    }
+```
+
+完整的技能代码为
+
+```typescript
+import { RegisterSkill, SkillPrototype } from '../../System/Prototype/SkillPrototype';
+import { RegisterPlayerSkill } from '../../Data/UserSkillTree';
+import { FightData } from '../../System/Base/FightData';
+import { BuffPrototype } from '../../System/Prototype/BuffPrototype';
+import { BuffProperty, Defense } from '../Buff/Defense';
+import { Buff } from '../../System/Instance/Buff';
+
+@RegisterSkill("Macrotherapy")
+@RegisterPlayerSkill("Macrotherapy")
+export class Macrotherapy extends SkillPrototype {
+
+    // 游戏内显示的名称
+    public name: string = "大治疗术"
+
+    // 游戏内显示的图标
+    public icon: string = "Images/Skill/Macrotherapy/spriteFrame"
+
+    // 简介
+    public get description(): string {
+        return `治疗所有队友，恢复 ${
+            this.getCure()
+        }(${
+            100 * this.getLv()
+        }%魔力值 + ${
+            50 * this.getLv()
+        }) 的生命值 , 并获得 ${ 10 * this.getLv() } 的双抗`
+    }
+
+    // 冷却时间，单位为秒
+    public get time(): number {
+        return 10 - Math.min(this.getLv() , 5)
+    }
+
+    // 消耗魔力值
+    public get cost(): number {
+        return 20 + (10 * this.getLv())
+    }
+
+    // 获取规范化等级
+    protected getLv() {
+        return Math.max(1 , this.skill.lv)
+    }
+
+    // 获取治疗量，治疗量 由 魔力 角色技能等级 决定
+    protected getCure() {
+        return this.skill.character.magic * Math.max(1 , this.getLv()) + 50 * this.getLv()
+    }
+    
+    public use(fightData: FightData): void {
+        // 如果 FightData 中的 player 属性为 当前技能的所属角色，则该技能为玩家使用
+        if (fightData.player === this.skill.character) {
+            // 只治疗玩家 heal 函数为 Character 类的方法，用于治疗角色
+            fightData.player.heal(
+                fightData.player , // 治疗来自谁
+                this.getCure() // 治疗量
+            )
+            // 创建buff实例
+            const buff = new Buff(
+                fightData.player , // buff 所属角色
+                this.skill.lv ,  // buff 等级
+                new Defense // buff 原型实例
+            )
+            // 设置数据
+            buff.data.set(BuffProperty.Defense , this.getLv() * 10)
+            buff.data.set(BuffProperty.Resist , this.getLv() * 10)
+            buff.data.set(BuffProperty.AddTime , Date.now())
+            buff.data.set(BuffProperty.Time , 5 * 1000)
+            // 添加buff
+            fightData.player.addBuff(buff)
+        }
+        // 否则为怪物使用
+        else {
+            // 遍历所有怪物
+            fightData.monsters.forEach(monster => {
+                // 如果怪物位为空或者怪物已经死亡
+                if (!monster || monster.isDead) return
+                // 治疗怪物
+                monster.heal(this.skill.character , this.getCure())
+                // 创建buff实例
+                const buff = new Buff(
+                    fightData.player , // buff 所属角色
+                    this.skill.lv ,  // buff 等级
+                    new Defense // buff 原型实例
+                )
+                // 设置数据
+                buff.data.set(BuffProperty.Defense , this.getLv() * 10)
+                buff.data.set(BuffProperty.Resist , this.getLv() * 10)
+                buff.data.set(BuffProperty.AddTime , Date.now())
+                buff.data.set(BuffProperty.Time , 5 * 1000)
+                // 添加buff
+                monster.addBuff(buff)
+            })
+        }
+    }
+
+    // 必须重写构造器，并且传入当前类给父类
+    constructor() {
+        super(Macrotherapy)
+    }
+
+}
+```
+
+至此我们成功完成了从物品，到buff，到技能的全定义，接下来，我们要进行怪物和关卡的定义了，也是真正开始战斗模块的自定义。
