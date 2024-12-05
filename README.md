@@ -237,9 +237,37 @@ export default class MyComponent extends Extension.SpineAnimation {
 
 具体用法和原理参考 [Vue3 响应式原理解析](https://mp.weixin.qq.com/s?__biz=MzI3NTM5NDgzOA==&mid=2247483736&idx=1&sn=7ffba2b40fa0ddacd1ad0a34c4afad7d&chksm=eb043921dc73b037b637f83a9344f9ffb40f0c514cce6cb2de609093d20860c436cd4d307db8&token=431470234&lang=zh_CN#rd)
 
+基础用法为:
+
+```typescript
+const {Rx} from "根目录/Module/Rx"
+
+// data 为可响应对象
+const data = Rx.reactive({
+    count: 0
+})
+
+Rx.effect(() => {
+    // 使用自动订阅 data.count 的改变
+    log(data.count)
+})
+
+// 改变 data.count
+setInterval(() => data.count++ , 1500)
+
+// 以上代码的执行结果为
+// 每隔 1.5s 会输出 count 的值
+```
+
+
+
 ## Script (主要脚本文件夹)
 
 这里着重介绍 **Mod** 和 **System** 文件夹，扩展主要在 **Mod** 文件夹中，会经常用到 **System** 文件夹的类和函数以及各种注册装饰器。这里会从创建一个一个物品，装备，关卡，怪物，buff，技能来讲解...
+
+### 自定义物品
+
+游戏中的所有物品继承于最基础的物品原型类：ItemPrototype 类，它位于 **根目录/Script/System/Prototype/ItemPrototype.ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义图标，介绍，用法等...
 
 ### 第一个自定义物品
 
@@ -380,12 +408,115 @@ export class UserBagItems {
 
 物品就出现了。**如果您没有找到对应的物品，可能是您之前进入游戏已经保存过了，只需要清除浏览器缓存(locaStorage)重新进入游戏即可!!!**
 
-这里我们就可以使用物品了
-
-![](./README/05.png)
-
-之后就可以看到我们的君焰石了
+这里我们就可以使用物品了，使用物品后，这个物品会遍历所有物品并且添加到背包中并弹出提示，之后就可以看到我们的君焰石了
 
 ![](./README/06.png)
 
-至此，物品的添加就先告一段落了。
+至此，物品的添加就先告一段落了，你已经成功添加了两个自己的物品到你的游戏中了，接下来我们试试添加一个技能到游戏中吧。
+
+### 添加一个自己的技能
+
+游戏中的所有技能继承于最基础的技能原型类：SkillPrototype 类，它位于 **根目录/Script/System/Prototype/SkillPrototype .ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义图标，介绍，用法等...
+
+### 第一个自定义技能
+
+假设我们现在有一个新的技能图标
+
+![](./README/PlayerSkillMacrotherapy.png)
+
+我们将它命名为 **大治疗术** 作为一个物品，图片命名为 **Macrotherapy.png**
+
+我们先将它放入资源文件夹中 **根目录/Resource/Images/Skill** 下
+
+之后我们新创建脚本，将它创建在 **根目录/Script/Mod/Skill** 下，就命名为 Macrotherapy.ts
+
+代码内容为
+
+```typescript
+import { RegisterSkill, SkillPrototype } from '../../System/Prototype/SkillPrototype';
+import { RegisterPlayerSkill } from '../../Data/UserSkillTree';
+import { FightData } from '../../System/Base/FightData';
+
+@RegisterSkill("Macrotherapy")
+@RegisterPlayerSkill("Macrotherapy")
+export class Macrotherapy extends SkillPrototype {
+
+    // 游戏内显示的名称
+    public name: string = "大治疗术"
+
+    // 游戏内显示的图标
+    public icon: string = "Images/Skill/Macrotherapy/spriteFrame"
+
+    // 简介
+    public get description(): string {
+        return `治疗所有队友，恢复 ${
+            this.getCure()
+        }(${
+            100 * this.getLv()
+        }%魔力值 + ${
+            50 * this.getLv()
+        }) 的生命值 , 并获得 ${ tihs.getDefense() } 的双抗 持续5s`
+    }
+
+    // 冷却时间，单位为秒
+    public get time(): number {
+        return 10 - Math.min(this.getLv() , 5)
+    }
+    
+    // 消耗魔力值
+    public get cost(): number {
+        return 20 + (10 * this.getLv())
+    }
+
+    // 获取规范化等级
+    protected getLv() {
+        return Math.max(1 , this.skill.lv)
+    }
+
+    // 获取治疗量，治疗量 由 魔力 角色技能等级 决定
+    protected getCure() {
+        return this.skill.character.magic * Math.max(1 , this.getLv()) + 50 * this.getLv()
+    }
+    
+    // 获取双抗
+    protected getDefense() {
+        return 10 * this.getLv()
+    }
+    
+    // 使用回调
+    public use(fightData: FightData): void {
+        // 如果 FightData 中的 player 属性为 当前技能的所属角色，则该技能为玩家使用
+        if (fightData.player === this.skill.character) {
+            // 只治疗玩家 heal 函数为 Character 类的方法，用于治疗角色
+            fightData.player.heal(
+                fightData.player , // 治疗来自谁
+                this.getCure() // 治疗量
+            )
+            // 添加buff
+        }
+        // 否则为怪物使用
+        else {
+            // 遍历所有怪物
+            fightData.monsters.forEach(monster => {
+                // 如果怪物位为空或者怪物已经死亡
+                if (!monster || monster.isDead) return
+                // 治疗怪物
+                monster.heal(this.skill.character , this.getCure())
+                // 添加buff
+            })
+        }
+    }
+
+    // 必须重写构造器，并且传入当前类给父类
+    constructor() {
+        super(Macrotherapy)
+    }
+
+}
+```
+
+这里我们先不添加 Buff ， 之后我们创建自定义 Buff 后再回来给角色添加对应的 Buff。之后我们就可以在技能界面查看我们新添加的技能了
+
+![](./README/07.png)
+
+之后就可以学习并且装配使用对应的技能了，接下来，我们去实现一个自定义的 Buff 来完善该技能增加双抗并且持续5s的功能。
