@@ -437,7 +437,9 @@ import { RegisterSkill, SkillPrototype } from '../../System/Prototype/SkillProto
 import { RegisterPlayerSkill } from '../../Data/UserSkillTree';
 import { FightData } from '../../System/Base/FightData';
 
+// 注册技能
 @RegisterSkill("Macrotherapy")
+// 注册到玩家技能列表
 @RegisterPlayerSkill("Macrotherapy")
 export class Macrotherapy extends SkillPrototype {
 
