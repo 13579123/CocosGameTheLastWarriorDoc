@@ -955,6 +955,7 @@ export class _00 extends FightLevel {
     public dropEquipment: DropEquipmentData[] = []
 
     // 关卡是否需要战胜所有敌人才算过关 false 为无论胜利还是失败都算过关
+    // 一般 秘境 剧情关卡 等无需过关的关卡返回 false
     public get needPass(): boolean {
         return false
     }
@@ -991,6 +992,42 @@ export class _00 extends FightLevel {
 
 ![](./README/10.png)
 
-也可以进入游戏开始进行战斗
+也可以进入游戏开始进行正常的战斗，如下图，也可以用来检测之前我们写好的技能和Buff。
 
 ![](./README/11.png)
+
+关卡也可以承载剧情，用来推进故事发展，添加剧情的方式也非常简单，我们只需要在刚刚创建的关卡文件中进行修改就行了，例如: 
+
+```typescript
+import { DropEquipmentData, DropItemData, FightLevel, MonsterData, RegisterLevel, RegisterLevelIndex, StoryData } from "../../System/Prototype/FightLevel";
+
+// 注册关卡
+@RegisterLevel("00")
+// 注册关卡到玩家主线
+@RegisterLevelIndex(0)
+export class _00 extends FightLevel {
+    
+    // ...其余代码
+    
+    // 关卡剧情
+    public get story(): StoryData[] {
+        return [
+            {
+                // 第几波怪物触发剧情 这里设计为第一波
+                wave: 1, 
+                //  剧情内容
+                story: [
+                    // 头像图片路径 , 名字 , 内容
+                    {characterAvatar: "Images/Avatar/test-avatar/spriteFrame" , characterName: "芭芭拉" , text: "你好"},
+                    {characterAvatar: "Images/Avatar/test-avatar/spriteFrame" , characterName: "芭芭拉" , text: "我是芭芭拉"},
+                ]
+            }
+        ]
+    }
+
+}
+```
+
+我们就可以在第一波看到剧情了
+
+![](./README/12.png)
