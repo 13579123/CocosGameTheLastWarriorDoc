@@ -766,3 +766,130 @@ export class Macrotherapy extends SkillPrototype {
 ```
 
 至此我们成功完成了从物品，到buff，到技能的全定义，接下来，我们要进行怪物和关卡的定义了，也是真正开始战斗模块的自定义。
+
+### 自定义怪物
+
+游戏中的所有角色都继承于最基础的技能原型类：CharacterPrototype类，它位于 **根目录/Script/System/Prototype/CharacterPrototype.ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义动画，动画名称，属性，成长值等... 需要注意本游戏目前只支持Spine生成的动画。
+
+### 自定义第一个怪物
+
+假设我们现在有一套新的怪物Spine动画
+
+[怪物 Spine 压缩包](./README/Bane.zip)
+
+我们将它命名为 **影魔** 作为一个怪物，在文件夹 **根目录/Resource/Spine** 中添加文件夹 Monster 并将压缩包解药到该文件夹，大概最终文件结构为：
+
+![](./README/08.png)
+
+至此，我们引入了第一个自定义怪物的Spine，接下来我们创建一个文件，在文件夹 **根目录/Script/Mod/Character** 中添加 Bane.ts 文件，代码内容如下:
+
+```typescript
+import { CharacterPrototype, RegisterCharacter } from "../../System/Prototype/CharacterPrototype";
+
+// 注册角色
+@RegisterCharacter("Bane")
+// 继承自角色原型
+// CharacterPrototype 继承自 GrowProperty
+export class Bane extends CharacterPrototype {
+
+    // 动画文件夹
+    public spine: string = "Spine/Monster/Bane"
+
+    // 攻击动画
+    public attackAnimation: string = "atk"
+
+    // 受伤动画
+    public damageAnimation: string = "Damaged"
+
+    // 死亡动画
+    public dieAnimation: string = "Death"
+
+    // 技能动画
+    public skillAnimation: string = "atk"
+
+    // 待机动画
+    public idleAnimation: string = "Idle"
+
+    // 基础血量
+    protected _baseHp: number = 100
+
+    // 获取基础血量 在生成角色时实际使用的时这个getter
+    public get baseHp(): number {
+        return this._baseHp
+    }
+
+    // 基础魔法值 对怪物意义不大
+    protected _baseMp: number = 100
+
+    // 获取基础魔法值 在生成角色时实际使用的时这个getter
+    public get baseMp(): number {
+        return this._baseMp
+    }
+
+    // 基础攻击力
+    protected _baseAttack: number = 15
+
+    // 获取基础攻击力 在生成角色时实际使用的时这个getter
+    public get baseAttack(): number {
+        return this._baseAttack
+    }
+
+    // 基础防御力
+    protected _baseDefense: number = 10
+
+    // 获取基础防御力 在生成角色时实际使用的时这个getter
+    public get baseDefense(): number {
+        return this._baseDefense
+    }
+
+    // 可以设置随等级成长的属性
+    protected _hpGrow: number = 10 // 每级成长10点血量
+
+    // 获取血量成长 在生成角色时实际使用的时这个getter
+    public get hpGrow(): number {
+        return this._hpGrow
+    }
+
+    // 攻击速度 
+    protected _attackSpeed: number = 0.8 // 每秒攻击 0.8 次
+
+    // 必须实现构造器
+    constructor(){
+        // 传入本身类
+        super(Bane);
+    }
+
+}
+```
+
+更多属性可以参考 **根目录/Script/System/Base/Type/PropertyType.ts**
+
+```typescript
+export const PropertyTypeList = [
+    { key: "maxHp", growKey: "hpGrow", baseKey: "baseHp", showKey: "生命值" , unit: "" , multiplier: 1 , fixed: 0 , min: 1},
+    { key: "maxMp", growKey: "mpGrow", baseKey: "baseMp", showKey: "魔法值" , unit: "" , multiplier: 1 , fixed: 0 , min: 1 },
+    { key: "attack", growKey: "attackGrow", baseKey: "baseAttack", showKey: "攻击力" , unit: "" , multiplier: 1 , fixed: 0 , min: 1 },
+    { key: "defense", growKey: "defenseGrow", baseKey: "baseDefense", showKey: "防御力" , unit: "" , multiplier: 1 , fixed: 0 , min: 0 },
+    { key: "resistance", growKey: "resistanceGrow", baseKey: "baseResistance", showKey: "魔抗" , unit: "" , multiplier: 1 , fixed: 0 , min: 0 },
+    { key: "magic", growKey: "magicGrow", baseKey: "baseMagic", showKey: "魔力" , unit: "" , multiplier: 1 , fixed: 0 , min: 0 },
+
+    { key: "penetration", growKey: "---", baseKey: "penetration", showKey: "穿透" , unit: "" , multiplier: 1 , fixed: 0 , min: 0 },
+    { key: "mpRecovery", growKey: "---", baseKey: "mpRecovery", showKey: "魔法回复" , unit: "" , multiplier: 1 , fixed: 0 , min: 0 },
+    { key: "hpRecovery", growKey: "---", baseKey: "hpRecovery", showKey: "生命回复" , unit: "" , multiplier: 1 , fixed: 0 , min: 0 },
+    { key: "critRate", growKey: "---", baseKey: "critRate", showKey: "暴击率" , unit: "%" , multiplier: 100 , fixed: 0 , min: 0 },
+    { key: "attackSpeed", growKey: "---", baseKey: "attackSpeed", showKey: "攻击速度" , unit: "" , multiplier: 1 , fixed: 2 , min: 0.1 },
+    { key: "critDamage", growKey: "---", baseKey: "critDamage", showKey: "暴击伤害" , unit: "%" , multiplier: 100 , fixed: 0 , min: 1 },
+    { key: "hpSteal", growKey: "---", baseKey: "hpSteal", showKey: "生命吸取" , unit: "%" , multiplier: 100 , fixed: 0 , min: 0 },
+    { key: "blockRate", growKey: "---", baseKey: "blockRate", showKey: "格挡率" , unit: "" , multiplier: 1 , fixed: 0 , min: 0 },
+]
+// key 为最终结算属性键 = baseKey + growKey * lv
+// growKey 为最终结算成长属性键
+// baseKey 为最终结算基础属性键
+// showKey 为游戏内展示的名称
+// unit 游戏内展示的单位
+// multiplier 游戏展示的乘数 比如 暴击率 0.8 游戏展示为 0.8 * 100 unit = 80%
+// fixed 显示小数点后几位
+// min 最小值
+```
+
+至此，我们添加了一个怪物到游戏中，我们需要在关卡中展示怪物，为此我们需要先添加一个关卡到游戏主关卡中，接下来，让我们自定义关卡。
