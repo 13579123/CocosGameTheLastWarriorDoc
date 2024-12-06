@@ -269,7 +269,7 @@ setInterval(() => data.count++ , 1500)
 
 游戏中的所有物品继承于最基础的物品原型类：ItemPrototype 类，它位于 **根目录/Script/System/Prototype/ItemPrototype.ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义图标，介绍，用法等...
 
-### 第一个自定义物品
+#### 第一个自定义物品
 
 假设我们现在有一个新的物品图标
 
@@ -319,7 +319,7 @@ export class FlameEnhancementStone extends ItemPrototype {
 
 然后，我们就可以在游戏中获得物品了，但是我们现在没有获取路径，所以让我们再加入一个物品，用来获取所有被注册的物品。
 
-### 第二个自定义物品
+#### 第二个自定义物品
 
 我们现在又有一个新的物品图标
 
@@ -418,7 +418,7 @@ export class UserBagItems {
 
 游戏中的所有技能继承于最基础的技能原型类：SkillPrototype 类，它位于 **根目录/Script/System/Prototype/SkillPrototype .ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义图标，介绍，用法等...
 
-### 第一个自定义技能
+#### 第一个自定义技能
 
 假设我们现在有一个新的技能图标
 
@@ -436,10 +436,11 @@ export class UserBagItems {
 import { RegisterSkill, SkillPrototype } from '../../System/Prototype/SkillPrototype';
 import { RegisterPlayerSkill } from '../../Data/UserSkillTree';
 import { FightData } from '../../System/Base/FightData';
+import { BuffPrototype } from '../../System/Prototype/BuffPrototype';
+import { BuffProperty, Defense } from '../Buff/Defense';
+import { Buff } from '../../System/Instance/Buff';
 
-// 注册技能
 @RegisterSkill("Macrotherapy")
-// 注册到玩家技能列表
 @RegisterPlayerSkill("Macrotherapy")
 export class Macrotherapy extends SkillPrototype {
 
@@ -457,14 +458,14 @@ export class Macrotherapy extends SkillPrototype {
             100 * this.getLv()
         }%魔力值 + ${
             50 * this.getLv()
-        }) 的生命值 , 并获得 ${ tihs.getDefense() } 的双抗 持续5s`
+        }) 的生命值 , 并获得 ${ 10 * this.getLv() } 的双抗`
     }
 
     // 冷却时间，单位为秒
     public get time(): number {
-        return 10 - Math.min(this.getLv() , 5)
+        return 12 - Math.min(this.getLv() , 5)
     }
-    
+
     // 消耗魔力值
     public get cost(): number {
         return 20 + (10 * this.getLv())
@@ -480,12 +481,6 @@ export class Macrotherapy extends SkillPrototype {
         return this.skill.character.magic * Math.max(1 , this.getLv()) + 50 * this.getLv()
     }
     
-    // 获取双抗
-    protected getDefense() {
-        return 10 * this.getLv()
-    }
-    
-    // 使用回调
     public use(fightData: FightData): void {
         // 如果 FightData 中的 player 属性为 当前技能的所属角色，则该技能为玩家使用
         if (fightData.player === this.skill.character) {
@@ -494,7 +489,19 @@ export class Macrotherapy extends SkillPrototype {
                 fightData.player , // 治疗来自谁
                 this.getCure() // 治疗量
             )
-            // 添加 buff TODO
+            // 创建buff实例
+            const buff = new Buff(
+                fightData.player , // buff 所属角色
+                this.skill.lv ,  // buff 等级
+                new Defense // buff 原型实例
+            )
+            // 设置数据
+            buff.data.set(BuffProperty.Defense , this.getLv() * 10)
+            buff.data.set(BuffProperty.Resist , this.getLv() * 10)
+            buff.data.set(BuffProperty.AddTime , Date.now())
+            buff.data.set(BuffProperty.Time , 5 * 1000)
+            // 添加buff
+            fightData.player.addBuff(buff)
         }
         // 否则为怪物使用
         else {
@@ -504,7 +511,19 @@ export class Macrotherapy extends SkillPrototype {
                 if (!monster || monster.isDead) return
                 // 治疗怪物
                 monster.heal(this.skill.character , this.getCure())
-                // 添加 buff TODO
+                // 创建buff实例
+                const buff = new Buff(
+                    monster , // buff 所属角色
+                    this.skill.lv ,  // buff 等级
+                    new Defense // buff 原型实例
+                )
+                // 设置数据
+                buff.data.set(BuffProperty.Defense , this.getLv() * 10)
+                buff.data.set(BuffProperty.Resist , this.getLv() * 10)
+                buff.data.set(BuffProperty.AddTime , Date.now())
+                buff.data.set(BuffProperty.Time , 5 * 1000)
+                // 添加buff
+                monster.addBuff(buff)
             })
         }
     }
@@ -527,7 +546,7 @@ export class Macrotherapy extends SkillPrototype {
 
 游戏中的所有技能继承于最基础的技能原型类：BuffPrototype类，它位于 **根目录/Script/System/Prototype/BuffPrototype.ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义图标，介绍，用法等...
 
-### 第一个自定义的Buff
+#### 第一个自定义的Buff
 
 假设我们现在有一个新的BUFF图标
 
@@ -558,6 +577,9 @@ export class Defense extends BuffPrototype {
 
     // Buff 名称
     public name: string = "Defense"
+
+    // Buff 图标
+    public icon: string = "Images/Buff/Defense/spriteFrame"
 
     // Buff 描述
     public get description(): string {
@@ -771,7 +793,7 @@ export class Macrotherapy extends SkillPrototype {
 
 游戏中的所有角色都继承于最基础的技能原型类：CharacterPrototype类，它位于 **根目录/Script/System/Prototype/CharacterPrototype.ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义动画，动画名称，属性，成长值等... 需要注意本游戏目前只支持Spine生成的动画。
 
-### 自定义第一个怪物
+#### 自定义第一个怪物
 
 假设我们现在有一套新的怪物Spine动画
 
@@ -893,3 +915,82 @@ export const PropertyTypeList = [
 ```
 
 至此，我们添加了一个怪物到游戏中，我们需要在关卡中展示怪物，为此我们需要先添加一个关卡到游戏主关卡中，接下来，让我们自定义关卡。
+
+### 自定义关卡
+
+游戏中的所有关卡都继承于最基础的关卡原型类：FightLevel 类，它位于 **根目录/Script/System/Prototype/FightLevel.ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义关卡掉落物品，关卡怪物列表，关卡剧情等... 
+
+#### 自定义第一个关卡
+
+我们将第一关命名为 **序章** ，在文件夹 **根目录/Script/Mod/Level** 中添加文件 **_00.ts** ，代码的内容如下：
+
+```typescript
+import { DropEquipmentData, DropItemData, FightLevel, MonsterData, RegisterLevel, RegisterLevelIndex } from "../../System/Prototype/FightLevel";
+
+// 注册关卡
+@RegisterLevel("00")
+// 注册关卡到玩家主线关卡，第0关
+@RegisterLevelIndex(0)
+export class _00 extends FightLevel {
+
+    // 关卡名称
+    public name: string = "序章: 落日城"
+
+    // 关卡描述
+    public desc: string = "在落日城，你将面临一场艰难的战斗，你需要使用你的智慧和勇气来战胜敌人，并保护你的家园。"
+
+    // 关卡图标 这里我们直接使用默认的
+    // public icon: string = ""
+
+    // 关卡掉落物品
+    public dropItem: DropItemData[] = [
+        // 这里的物品会显示到掉落列表中
+        {
+            id: "FlameEnhancementStone", // 掉落物品的 id 我们这里用之前创建的物品 FlameEnhancementStone
+            probability: 0.9 // 掉落物品的概率 这里是 90%
+        }
+    ]
+
+    // 关卡掉落的装备 这里暂时留空
+    public dropEquipment: DropEquipmentData[] = []
+
+    // 关卡是否需要战胜所有敌人才算过关 false 为无论胜利还是失败都算过关
+    public get needPass(): boolean {
+        return false
+    }
+
+    // 关卡怪物
+    public get monster(): MonsterData[][] {
+        // 数组的每一个元素都是一组怪物
+        return [
+            // 如果要留空则直接使用 null , 最多三个
+            [ 
+                null , // 左边
+                {
+                    id: "Bane", // 怪物 id 这里我们使用之前创建的 Bane 怪物
+                    lv: 1, // 怪物等级
+                    exp: 10, // 掉落的经验
+                    equipment: [], // 怪物身上的装备 装备属性 效果同样生效
+                    dropEquipment: [], // 可以掉落的装备
+                    skill: void 0, // 怪物技能这里我们暂时不设置技能
+                } , // 中间
+                null // 右边
+            ]
+        ]
+    }
+
+    // 必须给父类传入自己的构造器
+    constructor() {
+        super(_00)
+    }
+
+}
+```
+
+至此，我们就可以在关卡界面看见我们的关卡了
+
+![](./README/10.png)
+
+也可以进入游戏开始进行战斗
+
+![](./README/11.png)
