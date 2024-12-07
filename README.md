@@ -806,79 +806,80 @@ export class Macrotherapy extends SkillPrototype {
 至此，我们引入了第一个自定义怪物的Spine，接下来我们创建一个文件，在文件夹 **根目录/Script/Mod/Character** 中添加 Bane.ts 文件，代码内容如下:
 
 ```typescript
-import { CharacterPrototype, RegisterCharacter } from "../../System/Prototype/CharacterPrototype";
+import { DropEquipmentData, DropItemData, FightLevel, MonsterData, RegisterLevel, RegisterLevelIndex, StoryData } from "../../System/Prototype/FightLevel";
 
-// 注册角色
-@RegisterCharacter("Bane")
-// 继承自角色原型
-// CharacterPrototype 继承自 GrowProperty
-export class Bane extends CharacterPrototype {
+// 注册关卡
+@RegisterLevel("00")
+// 注册关卡到玩家主线
+@RegisterLevelIndex(0)
+export class _00 extends FightLevel {
 
-    // 动画文件夹
-    public spine: string = "Spine/Monster/Bane"
+    // 关卡名称
+    public name: string = "序章: 落日城"
 
-    // 攻击动画
-    public attackAnimation: string = "atk"
+    // 关卡描述
+    public desc: string = "在落日城，你将面临一场艰难的战斗，你需要使用你的智慧和勇气来战胜敌人，并保护你的家园。"
 
-    // 受伤动画
-    public damageAnimation: string = "Damaged"
+    // 关卡图标 这里我们直接使用默认的
+    // public icon: string = ""
 
-    // 死亡动画
-    public dieAnimation: string = "Death"
+    // 关卡掉落物品
+    public dropItem: DropItemData[] = [
+        // 这里的物品会显示到掉落列表中
+        {
+            id: "FlameEnhancementStone", // 掉落物品的 id 我们这里用之前创建的物品 FlameEnhancementStone
+            probability: 0.9 // 掉落物品的概率 这里是 90%
+        }
+    ]
 
-    // 技能动画
-    public skillAnimation: string = "atk"
+    // 关卡掉落的装备 这里暂时留空
+    public dropEquipment: DropEquipmentData[] = []
 
-    // 待机动画
-    public idleAnimation: string = "Idle"
-
-    // 基础血量
-    protected _baseHp: number = 100
-
-    // 获取基础血量 在生成角色时实际使用的时这个getter
-    public get baseHp(): number {
-        return this._baseHp
+    // 关卡是否需要战胜所有敌人才算过关 false 为无论胜利还是失败都算过关
+    public get needPass(): boolean {
+        return false
     }
 
-    // 基础魔法值 对怪物意义不大
-    protected _baseMp: number = 100
-
-    // 获取基础魔法值 在生成角色时实际使用的时这个getter
-    public get baseMp(): number {
-        return this._baseMp
+    // 关卡怪物
+    public get monster(): MonsterData[][] {
+        // 数组的每一个元素都是一组怪物
+        return [
+            // 如果要留空则直接使用 null , 最多三个
+            [ 
+                null , // 左边
+                {
+                    id: "Bane", // 怪物 id 这里我们使用之前创建的 Bane 怪物
+                    lv: 1, // 怪物等级
+                    exp: 10, // 掉落的经验
+                    equipment: [], // 怪物身上的装备 装备属性 效果同样生效
+                    dropEquipment: [], // 可以掉落的装备
+                    skill: {id: "Macrotherapy" , lv: 1}, // 怪物技能这里我们暂时之前的写好的技能 Macrotherapy
+                    // skill: void 0 , // 也可以直接设置为空表示没有技能
+                } , // 中间
+                null // 右边
+            ]
+        ]
     }
 
-    // 基础攻击力
-    protected _baseAttack: number = 15
-
-    // 获取基础攻击力 在生成角色时实际使用的时这个getter
-    public get baseAttack(): number {
-        return this._baseAttack
+    // 关卡剧情
+    public get story(): StoryData[] {
+        return [
+            {
+                // 第几波怪物触发剧情 这里设计为第一波
+                wave: 1, 
+                //  剧情内容
+                story: [
+                    // 头像图片路径 , 名字 , 内容
+                    {characterAvatar: "Images/Avatar/test-avatar/spriteFrame" , characterName: "芭芭拉" , text: "你好"},
+                    {characterAvatar: "Images/Avatar/test-avatar/spriteFrame" , characterName: "芭芭拉" , text: "我是芭芭拉"},
+                ]
+            }
+        ]
     }
 
-    // 基础防御力
-    protected _baseDefense: number = 10
-
-    // 获取基础防御力 在生成角色时实际使用的时这个getter
-    public get baseDefense(): number {
-        return this._baseDefense
-    }
-
-    // 可以设置随等级成长的属性
-    protected _hpGrow: number = 10 // 每级成长10点血量
-
-    // 获取血量成长 在生成角色时实际使用的时这个getter
-    public get hpGrow(): number {
-        return this._hpGrow
-    }
-
-    // 攻击速度 
-    protected _attackSpeed: number = 0.8 // 每秒攻击 0.8 次
-
-    // 必须实现构造器
-    constructor(){
-        // 传入本身类
-        super(Bane);
+    // 必须给父类传入自己的构造器
+    constructor() {
+        super(_00)
     }
 
 }
@@ -1031,3 +1032,54 @@ export class _00 extends FightLevel {
 我们就可以在第一波看到剧情了
 
 ![](./README/12.png)
+
+### 自定义成就
+
+游戏中的所有成就都继承于最基础的关卡原型类：Achivement类，它位于 **根目录/Script/Data/UserAchievement.ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义成就完成条件，成就名称，成就简介图标等
+
+#### 完成成就第一滴血
+
+我们来创建一个 **第一滴血** 的成就，这里有一个图标，我们将它放在 **根目录/Resource/Images/Achievement** 下，命名为 **FirstBlood.png**
+
+![](./README/FirstBlood.png)
+
+之后在文件夹 **根目录/Script/Mod/Achivement** 中添加文件 **FirstBlood.ts** ，代码的内容如下：
+
+```typescript
+import { Achivement, RegisterAchievement, UserAchivement } from "../../Data/UserAchievement";
+
+// 全局注册成就
+@RegisterAchievement("第一滴血")
+// 继承基础成就类
+export class FirstBlood extends Achivement {
+
+    // 成就图标
+    public icon: string = "Images/Achievement/FirstBlood/spriteFrame"
+
+    // 成就描述
+    public desc: string = "首次击杀敌人"
+
+    // 设置默认成就未达成
+    public hasAchieved: boolean = false
+
+    // 成就条件
+    // 这里的函数返回值就是成就是否达成
+    // 成就只会达成一次，并且只对 Rx.reactive 返回的响应式数据有效
+    // instance 为本地存储对象，有所有成就的达成情况，和击杀怪物的记录已经获取装备的记录 它就是一个响应式对象
+    condition(instance: UserAchivement): boolean {
+        // 记录击杀怪物数量和获取装备的记录
+        const killedMonster = instance.userAchivementCount
+        for (let i = 0; i < killedMonster.length; i++) {
+            const element = killedMonster[i];
+            // 如果有一个击杀怪物数量大于0，则表示已经击杀过怪物
+            if (element.type === "enemy" && element.count > 0) {
+                // 满足成就条件
+                return true
+            }
+        }
+        return false
+    }
+
+}
+```
+
