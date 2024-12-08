@@ -2,7 +2,9 @@
 
 游戏目前包含装备系统，资源系统，战斗系统，技能系统，存储系统，成就系统，BUFF系统，剧情系统
 
-下文 根目录 指的是 assets 文件夹
+注意: **下载得到的文件夹为不包含任何扩展的文件夹，即只有基础功能不包含任何 怪物，剧情，关卡，物品，装备 ，也不包含各种素材，皆需要自行创建。**
+
+注意: **下文 "根目录" 指的就是 "assets" 文件夹**
 
 ## 目录结构
 
@@ -436,11 +438,10 @@ export class UserBagItems {
 import { RegisterSkill, SkillPrototype } from '../../System/Prototype/SkillPrototype';
 import { RegisterPlayerSkill } from '../../Data/UserSkillTree';
 import { FightData } from '../../System/Base/FightData';
-import { BuffPrototype } from '../../System/Prototype/BuffPrototype';
-import { BuffProperty, Defense } from '../Buff/Defense';
-import { Buff } from '../../System/Instance/Buff';
 
+// 全局注册技能
 @RegisterSkill("Macrotherapy")
+// 注册到玩家技能表
 @RegisterPlayerSkill("Macrotherapy")
 export class Macrotherapy extends SkillPrototype {
 
@@ -489,19 +490,6 @@ export class Macrotherapy extends SkillPrototype {
                 fightData.player , // 治疗来自谁
                 this.getCure() // 治疗量
             )
-            // 创建buff实例
-            const buff = new Buff(
-                fightData.player , // buff 所属角色
-                this.skill.lv ,  // buff 等级
-                new Defense // buff 原型实例
-            )
-            // 设置数据
-            buff.data.set(BuffProperty.Defense , this.getLv() * 10)
-            buff.data.set(BuffProperty.Resist , this.getLv() * 10)
-            buff.data.set(BuffProperty.AddTime , Date.now())
-            buff.data.set(BuffProperty.Time , 5 * 1000)
-            // 添加buff
-            fightData.player.addBuff(buff)
         }
         // 否则为怪物使用
         else {
@@ -511,19 +499,6 @@ export class Macrotherapy extends SkillPrototype {
                 if (!monster || monster.isDead) return
                 // 治疗怪物
                 monster.heal(this.skill.character , this.getCure())
-                // 创建buff实例
-                const buff = new Buff(
-                    monster , // buff 所属角色
-                    this.skill.lv ,  // buff 等级
-                    new Defense // buff 原型实例
-                )
-                // 设置数据
-                buff.data.set(BuffProperty.Defense , this.getLv() * 10)
-                buff.data.set(BuffProperty.Resist , this.getLv() * 10)
-                buff.data.set(BuffProperty.AddTime , Date.now())
-                buff.data.set(BuffProperty.Time , 5 * 1000)
-                // 添加buff
-                monster.addBuff(buff)
             })
         }
     }
