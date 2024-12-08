@@ -1058,3 +1058,141 @@ export class FirstBlood extends Achivement {
 }
 ```
 
+### 自定义装备
+
+游戏中的所有成就都继承于最基础的关卡原型类：EquipmentPrototype 类，它位于 **根目录/Script/System/Prototype/EquipmentPrototype .ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义 装备简介图标 ，装备属性，套装效果 等
+
+#### 自定义第一个装备
+
+我们来创建一个 **新手** 装备，这里有一个图标，我们将它放在 **根目录/Resource/Images/Equipment** 下，命名为 **Rapier.png**
+
+![](./README/Rapier.png)
+
+之后在文件夹 **根目录/Script/Mod/Equipment** 中添加文件 **Rapier.ts** ，代码的内容如下：
+
+```typescript
+import { EquipmentPrototype, EquipmentType, RegisterEquipment } from "../../System/Prototype/EquipmentPrototype";
+
+// 注册到全局装备原型
+@RegisterEquipment("Rapier")
+// 继承自装备原型
+export class Rapier extends EquipmentPrototype {
+
+    // 装备名称
+    public name: string = "长剑"
+
+    // 装备类型
+    public type: EquipmentType = EquipmentType.Weapon
+
+    // 装备图标
+    public icon: string = "Images/Equipment/Rapier/spriteFrame"
+
+    // 装备词条
+    public glossary: string = "新手"
+
+    // 装备基础攻击力
+    protected _baseAttack: number = 10
+
+    // 真正获取攻击力
+    public get baseAttack(): number {
+        // 获取装备相同词条数量
+        const count = this.getSameGlossaryCount()
+
+        // 根据简介装备超过 1 把新手套装 就额外加 5 攻击力
+        if (count > 1) { 
+            return this._baseAttack + 5
+        }
+
+        // 否则返回基础攻击力
+        return this._baseAttack
+    }
+
+    // 装备攻击力成长值
+    public get attackGrowth(): number {
+        // 每一级 + 2 攻击力
+        return 2
+    }
+
+    // 装备攻击速度
+    public get attackSpeed() {
+        // 获取装备相同词条数量
+        const count = this.getSameGlossaryCount()
+
+        // 根据简介装备超过 1 把新手套装 就额外加 0.1 攻击速度
+        if (count > 1) {
+            return 0.1
+        }
+
+        // 否则返回 0
+        return 0
+    }
+
+    // 简介 支持 RichText
+    public get description(): string {
+
+        let description = ''
+
+        // 获取装备相同词条数量
+        const count = this.getSameGlossaryCount()
+
+        description += `<color=${count > 1 ? '#EBBC58' : '#B1B1B1'}>新手套装(2): +5攻击力</color>\n`
+
+        description += `<color=${count > 2 ? '#EBBC58' : '#B1B1B1'}>新手套装(3): +0.1攻击速度</color>\n`
+
+        description += `\n一把锈迹斑斑的铁剑，不会得破伤风吗？\n`
+
+        return description
+    }
+
+    // 必须将自己传给父类构造器
+    constructor() {
+        super(Rapier);
+    }
+}
+```
+
+这样我们就将第一个装备加入到游戏中了，但是我们目前没有添加我们的方法，让我们来到 **根目录/Script/Mod/Item/CheatPack.ts** 文件，就是我们之前创建的第二个物品，修改它的use方法：
+
+```typescript
+    // num 为 使用数量
+    public use(num: number): void {
+        // 获取所有注册的物品id
+        const allItemConstroctor = Array.from(ItemPrototype.AllItems.keys())
+        // 获取所有注册的装备id
+        const allEquipmentConstroctor = Array.from(EquipmentPrototype.AllEquipments.keys())
+        // 物品数据 ItemDto {id: string , count: number}
+        let items: ItemDto[] = [] , equipments: UserEquipmentDTO[] = []
+        // 循环使用
+        for (let i = 0; i < num; i++) {
+            // 遍历所有物品
+            allItemConstroctor.forEach((key) => {
+                // 避免重复添加本身物品
+                if (key !== "CheatPack") {
+                    // 通过 UserBagItems.addItem 函数将物品添加到用户数据中
+                    const result = UserBagItems.addItem({id: key, count: 1000})
+                    // 添加物品数据
+                    items.push(result)
+                }
+            })
+            // 添加所有装备
+            allEquipmentConstroctor.forEach((key) => {
+                // 通过 UserBagEquipments.addEquipment 函数将物品添加到用户数据中
+                const result = UserBagEquipments.addEquipment(key , EquipmentQuality.Legend , 1)
+                // 添加装备数据
+                equipments.push(result)
+            })
+        }
+        // 展示祝贺语
+        MessageAlert.congratulationsGetRewards(items , equipments)
+        // 保存用户数据到本地
+        UserBagItems.saveInstance()
+        // 保存装备数据到本地
+        UserBagEquipments.saveInstance()
+    }
+```
+
+这样，我们就可以通过这个物品获取装备了，来到游戏中，我们使用作弊礼包，之后就可以获得对应的装备了：
+
+![](./README/13.png)
+
+接下来，我们来创建一个同源装备，用来测试套装效果!
