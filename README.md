@@ -1119,7 +1119,7 @@ export class Rapier extends EquipmentPrototype {
         const count = this.getSameGlossaryCount()
 
         // 根据简介装备超过 1 把新手套装 就额外加 0.1 攻击速度
-        if (count > 1) {
+        if (count > 2) {
             return 0.1
         }
 
@@ -1196,3 +1196,83 @@ export class Rapier extends EquipmentPrototype {
 ![](./README/13.png)
 
 接下来，我们来创建一个同源装备，用来测试套装效果!
+
+#### 自定义第二个装备
+
+我们来创建一个另外的 **新手** 装备，这里有一个图标，我们将它放在 **根目录/Resource/Images/Equipment** 下，命名为 **IronHelmet.png**
+
+![](./README/IronHelmet.png)
+
+之后在文件夹 **根目录/Script/Mod/Equipment** 中添加文件 **IronHelmet.ts** ，代码的内容如下：
+
+```typescript
+import { EquipmentPrototype, EquipmentType, RegisterEquipment } from "../../System/Prototype/EquipmentPrototype";
+
+// 注册到全局装备原型
+@RegisterEquipment("IronHelmet")
+// 继承自装备原型
+export class IronHelmet extends EquipmentPrototype {
+
+    // 装备名称
+    public name: string = "头盔"
+
+    // 装备类型
+    public type: EquipmentType = EquipmentType.Helmet
+
+    // 装备图标
+    public icon: string = "Images/Equipment/IronHelmet/spriteFrame"
+
+    // 装备词条
+    public glossary: string = "新手"
+
+    // 装备基础生命值
+    protected _baseHp: number = 50
+
+    // 装备基础生命值
+    public get baseHp(): number {
+        const count = this.getSameGlossaryCount()
+        return this._baseHp + (count > 2 ? 50 : 0)
+    }
+
+    // 装备生命值成长
+    public get hpGrowth(): number {
+        return 15
+    }
+
+    // 装备基础防魔抗
+    public get baseResistance(): number {
+        const count = this.getSameGlossaryCount()
+        return count > 2 ? 10 : 0
+    }
+
+    // 获取装备的防御力
+    public get baseDefense(): number {
+        const count = this.getSameGlossaryCount()
+        return count > 2 ? 10 : 0
+    }
+
+    // 简介 支持 RichText
+    public get description(): string {
+
+        let description = ''
+
+        // 获取装备相同词条数量
+        const count = this.getSameGlossaryCount()
+
+        description += `<color=${count > 1 ? '#EBBC58' : '#B1B1B1'}>新手套装(2): +50生命值</color>\n`
+
+        description += `<color=${count > 2 ? '#EBBC58' : '#B1B1B1'}>新手套装(3): +10双抗</color>\n`
+
+        description += `\n铁头盔\n`
+
+        return description
+    }
+
+    // 必须将自己传给父类构造器
+    constructor() {
+        super(IronHelmet);
+    }
+}
+```
+
+这样我们就可以测试一下套装效果了
