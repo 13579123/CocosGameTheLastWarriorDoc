@@ -490,6 +490,7 @@ export class Macrotherapy extends SkillPrototype {
                 fightData.player , // 治疗来自谁
                 this.getCure() // 治疗量
             )
+            // 这里我们先不添加 BUFF TODO
         }
         // 否则为怪物使用
         else {
@@ -499,6 +500,7 @@ export class Macrotherapy extends SkillPrototype {
                 if (!monster || monster.isDead) return
                 // 治疗怪物
                 monster.heal(this.skill.character , this.getCure())
+                // 这里我们先不添加 BUFF TODO
             })
         }
     }
@@ -781,80 +783,88 @@ export class Macrotherapy extends SkillPrototype {
 至此，我们引入了第一个自定义怪物的Spine，接下来我们创建一个文件，在文件夹 **根目录/Script/Mod/Character** 中添加 Bane.ts 文件，代码内容如下:
 
 ```typescript
-import { DropEquipmentData, DropItemData, FightLevel, MonsterData, RegisterLevel, RegisterLevelIndex, StoryData } from "../../System/Prototype/FightLevel";
+import { CharacterPrototype, RegisterCharacter } from "../../System/Prototype/CharacterPrototype";
 
-// 注册关卡
-@RegisterLevel("00")
-// 注册关卡到玩家主线
-@RegisterLevelIndex(0)
-export class _00 extends FightLevel {
+// 注册角色
+@RegisterCharacter("Bane")
+// 继承自角色原型
+// CharacterPrototype 继承自 GrowProperty
+export class Bane extends CharacterPrototype {
 
-    // 关卡名称
-    public name: string = "序章: 落日城"
+    // 动画文件夹
+    public spine: string = "Spine/Monster/Bane"
 
-    // 关卡描述
-    public desc: string = "在落日城，你将面临一场艰难的战斗，你需要使用你的智慧和勇气来战胜敌人，并保护你的家园。"
+    // 攻击动画
+    public attackAnimation: string = "atk"
 
-    // 关卡图标 这里我们直接使用默认的
-    // public icon: string = ""
+    // 受伤动画
+    public damageAnimation: string = "byatk"
 
-    // 关卡掉落物品
-    public dropItem: DropItemData[] = [
-        // 这里的物品会显示到掉落列表中
-        {
-            id: "FlameEnhancementStone", // 掉落物品的 id 我们这里用之前创建的物品 FlameEnhancementStone
-            probability: 0.9 // 掉落物品的概率 这里是 90%
-        }
-    ]
+    // 死亡动画
+    public dieAnimation: string = "Death"
 
-    // 关卡掉落的装备 这里暂时留空
-    public dropEquipment: DropEquipmentData[] = []
+    // 技能动画
+    public skillAnimation: string = "atk"
 
-    // 关卡是否需要战胜所有敌人才算过关 false 为无论胜利还是失败都算过关
-    public get needPass(): boolean {
-        return false
+    // 待机动画
+    public idleAnimation: string = "Idle"
+
+    // 基础血量
+    protected _baseHp: number = 220
+
+    // 获取基础血量 在生成角色时实际使用的时这个getter
+    public get baseHp(): number {
+        return this._baseHp
     }
 
-    // 关卡怪物
-    public get monster(): MonsterData[][] {
-        // 数组的每一个元素都是一组怪物
-        return [
-            // 如果要留空则直接使用 null , 最多三个
-            [ 
-                null , // 左边
-                {
-                    id: "Bane", // 怪物 id 这里我们使用之前创建的 Bane 怪物
-                    lv: 1, // 怪物等级
-                    exp: 10, // 掉落的经验
-                    equipment: [], // 怪物身上的装备 装备属性 效果同样生效
-                    dropEquipment: [], // 可以掉落的装备
-                    skill: {id: "Macrotherapy" , lv: 1}, // 怪物技能这里我们暂时之前的写好的技能 Macrotherapy
-                    // skill: void 0 , // 也可以直接设置为空表示没有技能
-                } , // 中间
-                null // 右边
-            ]
-        ]
+    // 基础魔法值 对怪物意义不大
+    protected _baseMp: number = 100
+
+    // 获取基础魔法值 在生成角色时实际使用的时这个getter
+    public get baseMp(): number {
+        return this._baseMp
     }
 
-    // 关卡剧情
-    public get story(): StoryData[] {
-        return [
-            {
-                // 第几波怪物触发剧情 这里设计为第一波
-                wave: 1, 
-                //  剧情内容
-                story: [
-                    // 头像图片路径 , 名字 , 内容
-                    {characterAvatar: "Images/Avatar/test-avatar/spriteFrame" , characterName: "芭芭拉" , text: "你好"},
-                    {characterAvatar: "Images/Avatar/test-avatar/spriteFrame" , characterName: "芭芭拉" , text: "我是芭芭拉"},
-                ]
-            }
-        ]
+    // 可以设置随等级成长的属性
+    protected _hpGrow: number = 15 // 每级成长10点血量
+
+    // 基础攻击力
+    protected _baseAttack: number = 15
+
+    // 获取基础攻击力 在生成角色时实际使用的时这个getter
+    public get baseAttack(): number {
+        return this._baseAttack
     }
 
-    // 必须给父类传入自己的构造器
-    constructor() {
-        super(_00)
+    // 基础防御力
+    protected _baseDefense: number = 10
+
+    // 获取基础防御力 在生成角色时实际使用的时这个getter
+    public get baseDefense(): number {
+        return this._baseDefense
+    }
+
+    // 攻击成长
+    protected _attackGrow: number = 5
+
+    // 防御力成长
+    protected _defenseGrow: number = 2
+
+    // 魔抗成长
+    protected _resistanceGrow: number = 2
+
+    // 获取血量成长 在生成角色时实际使用的时这个getter
+    public get hpGrow(): number {
+        return this._hpGrow
+    }
+
+    // 攻击速度 
+    protected _attackSpeed: number = 0.8 // 每秒攻击 0.8 次
+
+    // 必须实现构造器
+    constructor(){
+        // 传入本身类
+        super(Bane);
     }
 
 }
@@ -922,7 +932,7 @@ export class _00 extends FightLevel {
     public dropItem: DropItemData[] = [
         // 这里的物品会显示到掉落列表中
         {
-            id: "FlameEnhancementStone", // 掉落物品的 id 我们这里用之前创建的物品 FlameEnhancementStone
+            id: "CheatPack", // 掉落物品的 id 我们这里用之前创建的物品 CheatPack
             probability: 0.9 // 掉落物品的概率 这里是 90%
         }
     ]
@@ -1023,7 +1033,7 @@ export class _00 extends FightLevel {
 ```typescript
 import { Achivement, RegisterAchievement, UserAchivement } from "../../Data/UserAchievement";
 
-// 全局注册成就
+// 全局注册成就 参数就是成就名称
 @RegisterAchievement("第一滴血")
 // 继承基础成就类
 export class FirstBlood extends Achivement {
@@ -1071,7 +1081,7 @@ export class FirstBlood extends Achivement {
 之后在文件夹 **根目录/Script/Mod/Equipment** 中添加文件 **Rapier.ts** ，代码的内容如下：
 
 ```typescript
-import { EquipmentPrototype, EquipmentType, RegisterEquipment } from "../../System/Prototype/EquipmentPrototype";
+import { EquipmentPrototype, EquipmentType, RegisterEquipment, StrongerMaterial } from "../../System/Prototype/EquipmentPrototype";
 
 // 注册到全局装备原型
 @RegisterEquipment("Rapier")
@@ -1087,7 +1097,7 @@ export class Rapier extends EquipmentPrototype {
     // 装备图标
     public icon: string = "Images/Equipment/Rapier/spriteFrame"
 
-    // 装备词条
+    // 装备词条 留空则为无词条
     public glossary: string = "新手"
 
     // 装备基础攻击力
@@ -1125,6 +1135,32 @@ export class Rapier extends EquipmentPrototype {
 
         // 否则返回 0
         return 0
+    }
+
+    // 装备强化材料
+    public get strongerMaterial(): StrongerMaterial[] {
+        const r: StrongerMaterial[] = [] // 一共 9 个元素 每个元素代表一个等级的材料
+        for (let i = 0; i <= 9; i++) {
+            r[i] = {
+                gold: 0, // 所需金币
+                diamond: 0, // 所需钻石
+                item: [{id: "CheatPack" , count: 1}] // 强化需要哪些材料 id 物品的注册名称 count 物品数量
+            }
+        }
+        return r
+    }
+
+    // 装备分解会获得哪些材料
+    public get salvageMaterial(): StrongerMaterial[] {
+        const r: StrongerMaterial[] = [] // 一共 9 个元素 每个元素代表一个等级的材料
+        for (let i = 0; i <= 9; i++) {
+            r[i] = {
+                gold: 0, // 暂时没什么用后续可能会用到
+                diamond: 0, // 暂时没什么用后续可能会用到
+                item: [{id: "CheatPack" , count: 1}] // 分解会获得哪些材料 id 物品的注册名称 count 物品数量
+            }
+        }
+        return r 
     }
 
     // 简介 支持 RichText
@@ -1206,7 +1242,7 @@ export class Rapier extends EquipmentPrototype {
 之后在文件夹 **根目录/Script/Mod/Equipment** 中添加文件 **IronHelmet.ts** ，代码的内容如下：
 
 ```typescript
-import { EquipmentPrototype, EquipmentType, RegisterEquipment } from "../../System/Prototype/EquipmentPrototype";
+import { EquipmentPrototype, EquipmentType, RegisterEquipment, StrongerMaterial } from "../../System/Prototype/EquipmentPrototype";
 
 // 注册到全局装备原型
 @RegisterEquipment("IronHelmet")
@@ -1222,7 +1258,7 @@ export class IronHelmet extends EquipmentPrototype {
     // 装备图标
     public icon: string = "Images/Equipment/IronHelmet/spriteFrame"
 
-    // 装备词条
+    // 装备词条 留空则为无词条
     public glossary: string = "新手"
 
     // 装备基础生命值
@@ -1231,7 +1267,7 @@ export class IronHelmet extends EquipmentPrototype {
     // 装备基础生命值
     public get baseHp(): number {
         const count = this.getSameGlossaryCount()
-        return this._baseHp + (count > 2 ? 50 : 0)
+        return this._baseHp + (count > 1 ? 50 : 0)
     }
 
     // 装备生命值成长
@@ -1250,6 +1286,33 @@ export class IronHelmet extends EquipmentPrototype {
         const count = this.getSameGlossaryCount()
         return count > 2 ? 10 : 0
     }
+
+    // 装备强化材料
+    public get strongerMaterial(): StrongerMaterial[] {
+        const r: StrongerMaterial[] = [] // 一共 9 个元素 每个元素代表一个等级的材料
+        for (let i = 0; i <= 9; i++) {
+            r[i] = {
+                gold: 0, // 所需金币
+                diamond: 0, // 所需钻石
+                item: [{id: "CheatPack" , count: 1}] // 强化需要哪些材料 id 物品的注册名称 count 物品数量
+            }
+        }
+        return r
+    }
+
+    // 装备分解会获得哪些材料
+    public get salvageMaterial(): StrongerMaterial[] {
+        const r: StrongerMaterial[] = [] // 一共 9 个元素 每个元素代表一个等级的材料
+        for (let i = 0; i <= 9; i++) {
+            r[i] = {
+                gold: 0, // 暂时没什么用后续可能会用到
+                diamond: 0, // 暂时没什么用后续可能会用到
+                item: [{id: "CheatPack" , count: 1}] // 分解会获得哪些材料 id 物品的注册名称 count 物品数量
+            }
+        }
+        return r 
+    }
+
 
     // 简介 支持 RichText
     public get description(): string {
@@ -1275,4 +1338,5 @@ export class IronHelmet extends EquipmentPrototype {
 }
 ```
 
-这样我们就可以测试一下套装效果了
+这样我们就可以测试一下套装效果了，当我们装备了一定数量的同词条（同源）装备后，装备可能会有一些特殊效果（额外的属性，攻击或者受击buff等）。
+
