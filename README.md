@@ -1,10 +1,10 @@
-# Cocos 回合制游戏文档
+# Cocos 回合制游戏文档（代码v 1.0.1版本）
 
 游戏目前包含装备系统，资源系统，战斗系统，技能系统，存储系统，成就系统，BUFF系统，剧情系统
 
-注意: **下载得到的文件夹为包含基础关卡，怪物和装备物品，若跟随此文档可以直接删除只保留 Player.ts 文件。** 需要角色物品动画素材可以加群免费下载获取，动画素材本身为其他游戏中获取的所以不可商用只能用于学习交流。
-
 注意: **下文 "根目录" 指的就是 "assets" 文件夹**
+
+注意: **下载得到的文件夹为包含基础关卡，怪物和装备物品，若跟随此文档可以直接删除 "根目录/Script/Mod/Base"文件夹** 需要角色物品动画素材可以加群免费下载获取，动画素材本身为其他游戏中获取的所以不可商用只能用于学习交流。
 
 ## 目录结构
 
@@ -267,6 +267,48 @@ setInterval(() => data.count++ , 1500)
 
 这里着重介绍 **Mod** 和 **System** 文件夹，扩展主要在 **Mod** 文件夹中，会经常用到 **System** 文件夹的类和函数以及各种注册装饰器。这里会从创建一个一个物品，装备，关卡，怪物，buff，技能来讲解...
 
+我们先创建一个自己的 Mod 文件夹，在 **根目录/Script/Mod** 下创建文件夹，命名为 **MyMod** ，下文中如果有不存在的目录直接创建即可。
+
+### 自定义主页宠物
+
+游戏中主页宠物继承于最基础的原型类：PetDataClass 类，它位于 **根目录/Script/Data/PetData.ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义Spine动画，说话的文字等...
+
+假设我们现在有一套新的宠物Spine动画
+
+[Spine动画](./README/Atelisi.zip)
+
+我们新建一个文件夹名称为 **Atelisi** 放在 **根目录/Resource/Spine/Pet** 中，之后新建文件在 **根目录/Script/Mod/MyMod/Pet** 下，就命名为 **Atelisi.ts** 代码内容为:
+
+```typescript
+// 导入基类 和 注册装饰器
+import { PetDataClass, RegisterPetData } from "../../../Data/PetData";
+
+// 注册宠物数据
+@RegisterPetData()
+export class Atelisi extends PetDataClass {
+    
+    // 宠物动画文件夹
+    public spine: string = "Spine/Pet/Atelisi"
+
+    // 宠物动画名称
+    public animation: string = "daiji"
+
+    // 宠物缩放比例
+    public scale: number = 0.5
+    
+    // 宠物的发言
+    public text: string[] = [
+        "你好,我叫爱丽丝，你受伤了吗，让我帮你治疗吧。",
+        "蕾雅有时候是会比较严厉，那是她不愿意再失去战友了。"
+    ]
+
+}
+```
+
+之后，我们就可以在主页看见自己的宠物了。
+
+![](./README/20.png)
+
 ### 自定义物品
 
 游戏中的所有物品继承于最基础的物品原型类：ItemPrototype 类，它位于 **根目录/Script/System/Prototype/ItemPrototype.ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义图标，介绍，用法等...
@@ -281,13 +323,13 @@ setInterval(() => data.count++ , 1500)
 
 我们先将它放入资源文件夹中 **根目录/Resource/Images/Item** 下
 
-之后我们新创建脚本，将它创建在 **根目录/Script/Mod/Item** 下，就命名为 FlameEnhancementStone.ts
+之后我们新创建脚本，将它创建在 **根目录/Script/Mod/MyMod/Item** 下，就命名为 FlameEnhancementStone.ts
 
 代码内容为: 
 
 ```typescript
 // 从 System 文件夹中加载 ItemPrototype 基类 和 注册物品 的注解
-import { ItemPrototype, RegisterItem } from "../../System/Prototype/ItemPrototype"
+import { ItemPrototype, RegisterItem } from "../../../System/Prototype/ItemPrototype"
 
 // 注册物品原型，参数为物品id，这里物品类就会被收录到 ItemPrototype.AllItems 中,可以被遍历使用
 @RegisterItem("FlameEnhancementStone")
@@ -331,17 +373,17 @@ export class FlameEnhancementStone extends ItemPrototype {
 
 我们先将它放入资源文件夹中 **根目录/Resource/Images/Item** 下
 
-之后我们新创建脚本，将它创建在 **根目录/Script/Mod/Item** 下，就命名为 CheatPack.ts
+之后我们新创建脚本，将它创建在 **根目录/Script/Mod/MyMod/Item** 下，就命名为 CheatPack.ts
 
 代码内容为: 
 
 ```typescript
-import { UserBagEquipments, UserEquipmentDTO } from "../../Data/UserBagEquipments"
-import { ItemDto, UserBagItems } from "../../Data/UserBagItems"
-import { EquipmentQuality } from "../../System/Instance/Equipment"
-import { EquipmentPrototype } from "../../System/Prototype/EquipmentPrototype"
-import { ItemPrototype, RegisterItem } from "../../System/Prototype/ItemPrototype"
-import { MessageAlert } from "../../Util/MessageAlert"
+import { UserBagEquipments, UserEquipmentDTO } from "../../../Data/UserBagEquipments"
+import { ItemDto, UserBagItems } from "../../../Data/UserBagItems"
+import { EquipmentQuality } from "../../../System/Instance/Equipment"
+import { EquipmentPrototype } from "../../../System/Prototype/EquipmentPrototype"
+import { ItemPrototype, RegisterItem } from "../../../System/Prototype/ItemPrototype"
+import { MessageAlert } from "../../../Util/MessageAlert"
 
 // 注册物品
 @RegisterItem("CheatPack")
@@ -430,14 +472,14 @@ export class UserBagItems {
 
 我们先将它放入资源文件夹中 **根目录/Resource/Images/Skill** 下
 
-之后我们新创建脚本，将它创建在 **根目录/Script/Mod/Skill** 下，就命名为 Macrotherapy.ts
+之后我们新创建脚本，将它创建在 **根目录/Script/Mod/MyMod/Skill** 下，就命名为 Macrotherapy.ts
 
 代码内容为
 
 ```typescript
-import { RegisterSkill, SkillPrototype } from '../../System/Prototype/SkillPrototype';
-import { RegisterPlayerSkill } from '../../Data/UserSkillTree';
-import { FightData } from '../../System/Base/FightData';
+import { RegisterSkill, SkillPrototype } from '../../../System/Prototype/SkillPrototype';
+import { RegisterPlayerSkill } from '../../../Data/UserSkillTree';
+import { FightData } from '../../../System/Base/FightData';
 
 // 全局注册技能
 @RegisterSkill("Macrotherapy")
@@ -533,12 +575,12 @@ export class Macrotherapy extends SkillPrototype {
 
 我们先将它放入资源文件夹中 **根目录/Resource/Images/Buff** 下
 
-之后我们新创建脚本，将它创建在 **根目录/Script/Mod/Buff** 下，就命名为 Defense.ts
+之后我们新创建脚本，将它创建在 **根目录/Script/Mod/MyMod/Buff** 下，就命名为 Defense.ts
 
 代码内容为
 
 ```typescript
-import { BuffPrototype, RegisterBuff } from "../../System/Prototype/BuffPrototype"
+import { BuffPrototype, RegisterBuff } from "../../../System/Prototype/BuffPrototype"
 
 // BUFF 属性枚举，可以自定义buff数据
 export enum BuffProperty {
@@ -605,7 +647,7 @@ export class Defense extends BuffPrototype {
 
 ### 完成完整的自定义技能
 
-接下来，我们完成之前没有完成的技能效果，来到 **根目录/Script/Mod/Skill/Macrotherapy.ts** 文件，为技能添加一个增加双抗的BUFF
+接下来，我们完成之前没有完成的技能效果，来到 **根目录/Script/Mod/MyMod/Skill/Macrotherapy.ts** 文件，为技能添加一个增加双抗的BUFF
 
 修改类中的 use 函数
 
@@ -780,10 +822,10 @@ export class Macrotherapy extends SkillPrototype {
 
 ![](./README/08.png)
 
-至此，我们引入了第一个自定义怪物的Spine，接下来我们创建一个文件，在文件夹 **根目录/Script/Mod/Character** 中添加 Bane.ts 文件，代码内容如下:
+至此，我们引入了第一个自定义怪物的Spine，接下来我们创建一个文件，在文件夹 **根目录/Script/Mod/MyMod/Character** 中添加 Bane.ts 文件，代码内容如下:
 
 ```typescript
-import { CharacterPrototype, RegisterCharacter } from "../../System/Prototype/CharacterPrototype";
+import { CharacterPrototype, RegisterCharacter } from "../../../System/Prototype/CharacterPrototype";
 
 // 注册角色
 @RegisterCharacter("Bane")
@@ -908,10 +950,10 @@ export const PropertyTypeList = [
 
 #### 自定义第一个关卡
 
-我们将第一关命名为 **序章** ，在文件夹 **根目录/Script/Mod/Level** 中添加文件 **_00.ts** ，代码的内容如下：
+我们将第一关命名为 **序章** ，在文件夹 **根目录/Script/Mod/MyMod/Level** 中添加文件 **_00.ts** ，代码的内容如下：
 
 ```typescript
-import { DropEquipmentData, DropItemData, FightLevel, MonsterData, RegisterLevel, RegisterLevelIndex } from "../../System/Prototype/FightLevel";
+import { DropEquipmentData, DropItemData, FightLevel, MonsterData, RegisterLevel, RegisterLevelIndex } from "../../../System/Prototype/FightLevel";
 
 // 注册关卡
 @RegisterLevel("00")
@@ -1028,10 +1070,10 @@ export class _00 extends FightLevel {
 
 ![](./README/FirstBlood.png)
 
-之后在文件夹 **根目录/Script/Mod/Achivement** 中添加文件 **FirstBlood.ts** ，代码的内容如下：
+之后在文件夹 **根目录/Script/Mod/MyMod/Achivement** 中添加文件 **FirstBlood.ts** ，代码的内容如下：
 
 ```typescript
-import { Achivement, RegisterAchievement, UserAchivement } from "../../Data/UserAchievement";
+import { Achivement, RegisterAchievement, UserAchivement } from "../../../Data/UserAchievement";
 
 // 全局注册成就 参数就是成就名称
 @RegisterAchievement("第一滴血")
@@ -1078,10 +1120,10 @@ export class FirstBlood extends Achivement {
 
 ![](./README/Rapier.png)
 
-之后在文件夹 **根目录/Script/Mod/Equipment** 中添加文件 **Rapier.ts** ，代码的内容如下：
+之后在文件夹 **根目录/Script/Mod/MyMod/Equipment** 中添加文件 **Rapier.ts** ，代码的内容如下：
 
 ```typescript
-import { EquipmentPrototype, EquipmentType, RegisterEquipment, StrongerMaterial } from "../../System/Prototype/EquipmentPrototype";
+import { EquipmentPrototype, EquipmentType, RegisterEquipment, StrongerMaterial } from "../../../System/Prototype/EquipmentPrototype";
 
 // 注册到全局装备原型
 @RegisterEquipment("Rapier")
@@ -1239,10 +1281,10 @@ export class Rapier extends EquipmentPrototype {
 
 ![](./README/IronHelmet.png)
 
-之后在文件夹 **根目录/Script/Mod/Equipment** 中添加文件 **IronHelmet.ts** ，代码的内容如下：
+之后在文件夹 **根目录/Script/Mod/MyMod/Equipment** 中添加文件 **IronHelmet.ts** ，代码的内容如下：
 
 ```typescript
-import { EquipmentPrototype, EquipmentType, RegisterEquipment, StrongerMaterial } from "../../System/Prototype/EquipmentPrototype";
+import { EquipmentPrototype, EquipmentType, RegisterEquipment, StrongerMaterial } from "../../../System/Prototype/EquipmentPrototype";
 
 // 注册到全局装备原型
 @RegisterEquipment("IronHelmet")
