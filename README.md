@@ -6,6 +6,26 @@
 
 注意: **下载得到的文件夹为包含基础关卡，怪物和装备物品，若跟随此文档可以直接删除 "根目录/Script/Mod/Base"文件夹** 需要角色物品动画素材可以加群免费下载获取，动画素材本身为其他游戏中获取的所以不可商用只能用于学习交流。
 
+更新内容: (v 1.0.0 -> v 1.0.1)[如果商城版本没有更新可能是还再审核中]
+
+**更改了Mod文件夹代码目录格式 **
+
+**v 1.0.0** Mod 文件夹格式
+
+![](./README/v 1.0.0 dir tree.png)
+
+比较混乱，所有角色扩展，物品扩展文件夹都暴露在外
+
+**v 1.0.1** Mod 文件夹格式
+
+![](./README/v 1.0.1 dir tree - 1.png)
+
+![](./README/v 1.0.1 dir tree - 2.png)
+
+每个 Mod 自建一个文件夹，方便管理，可以直接删除或者添加
+
+**自定义主页宠物**
+
 ## 目录结构
 
 ![图片](./README/01.png)
@@ -269,7 +289,7 @@ setInterval(() => data.count++ , 1500)
 
 我们先创建一个自己的 Mod 文件夹，在 **根目录/Script/Mod** 下创建文件夹，命名为 **MyMod** ，下文中如果有不存在的目录直接创建即可。
 
-### 自定义主页宠物
+### 自定义主页宠物(v1.0.1 以上版本)
 
 游戏中主页宠物继承于最基础的原型类：PetDataClass 类，它位于 **根目录/Script/Data/PetData.ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义Spine动画，说话的文字等...
 
@@ -309,7 +329,7 @@ export class Atelisi extends PetDataClass {
 
 ![](./README/20.png)
 
-### 自定义物品
+### 自定义物品(v1.0.0 以上版本)
 
 游戏中的所有物品继承于最基础的物品原型类：ItemPrototype 类，它位于 **根目录/Script/System/Prototype/ItemPrototype.ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义图标，介绍，用法等...
 
@@ -429,7 +449,7 @@ export class CheatPack extends ItemPrototype {
 }
 ```
 
-### 通过代码添加物品到背包
+### 通过代码添加物品到背包(v1.0.0 以上版本)
 
 现在我们将该物品添加到用户初始物品栏中，来到文件 **根目录/Script/Data/UserBagItems.ts** 文件
 
@@ -458,7 +478,7 @@ export class UserBagItems {
 
 至此，物品的添加就先告一段落了，你已经成功添加了两个自己的物品到你的游戏中了，接下来我们试试添加一个技能到游戏中吧。
 
-### 添加一个自己的技能
+### 添加一个自己的技能(v1.0.0 以上版本)
 
 游戏中的所有技能继承于最基础的技能原型类：SkillPrototype 类，它位于 **根目录/Script/System/Prototype/SkillPrototype .ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义图标，介绍，用法等...
 
@@ -561,7 +581,7 @@ export class Macrotherapy extends SkillPrototype {
 
 之后就可以学习并且装配使用对应的技能了，接下来，我们去实现一个自定义的 Buff 来完善该技能增加双抗并且持续5s的功能。
 
-### 添加一个自己的BUFF
+### 添加一个自己的BUFF(v1.0.0 以上版本)
 
 游戏中的所有技能继承于最基础的技能原型类：BuffPrototype类，它位于 **根目录/Script/System/Prototype/BuffPrototype.ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义图标，介绍，用法等...
 
@@ -808,7 +828,7 @@ export class Macrotherapy extends SkillPrototype {
 
 至此我们成功完成了从物品，到buff，到技能的全定义，接下来，我们要进行怪物和关卡的定义了，也是真正开始战斗模块的自定义。
 
-### 自定义怪物
+### 自定义怪物(v1.0.0 以上版本)
 
 游戏中的所有角色都继承于最基础的技能原型类：CharacterPrototype类，它位于 **根目录/Script/System/Prototype/CharacterPrototype.ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义动画，动画名称，属性，成长值等... 需要注意本游戏目前只支持Spine生成的动画。
 
@@ -944,7 +964,7 @@ export const PropertyTypeList = [
 
 至此，我们添加了一个怪物到游戏中，我们需要在关卡中展示怪物，为此我们需要先添加一个关卡到游戏主关卡中，接下来，让我们自定义关卡。
 
-### 自定义关卡
+### 自定义关卡(v1.0.0 以上版本)
 
 游戏中的所有关卡都继承于最基础的关卡原型类：FightLevel 类，它位于 **根目录/Script/System/Prototype/FightLevel.ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义关卡掉落物品，关卡怪物列表，关卡剧情等... 
 
@@ -1060,7 +1080,7 @@ export class _00 extends FightLevel {
 
 ![](./README/12.png)
 
-### 自定义成就
+### 自定义成就(v1.0.0 以上版本)
 
 游戏中的所有成就都继承于最基础的关卡原型类：Achivement类，它位于 **根目录/Script/Data/UserAchievement.ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义成就完成条件，成就名称，成就简介图标等
 
@@ -1110,7 +1130,7 @@ export class FirstBlood extends Achivement {
 }
 ```
 
-### 自定义装备
+### 自定义装备(v1.0.0 以上版本)
 
 游戏中的所有成就都继承于最基础的关卡原型类：EquipmentPrototype 类，它位于 **根目录/Script/System/Prototype/EquipmentPrototype .ts** 文件 ，我们通过重写基类的方法和属性可以做到自定义 装备简介图标 ，装备属性，套装效果 等
 
