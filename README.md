@@ -12,17 +12,19 @@
 
 **v 1.0.0** Mod 文件夹格式
 
-![](./README/v 1.0.0 dir tree.png)
+![](./README/v1.0.0-dir-tree.png)
 
 比较混乱，所有角色扩展，物品扩展文件夹都暴露在外
 
 **v 1.0.1** Mod 文件夹格式
 
-![](./README/v 1.0.1 dir tree - 1.png)
+![](./README/v1.0.1-dir-tree-1.png)
 
-![](./README/v 1.0.1 dir tree - 2.png)
+Mod 下为一个单独的 Base 模组，可以直接删除也不影响正常使用
 
-每个 Mod 自建一个文件夹，方便管理，可以直接删除或者添加
+![](./README/v1.0.1-dir-tree-2.png)
+
+每个 Mod 自建一个文件夹，有自己的成就，技能，buff等等，方便管理，可以直接删除或者添加
 
 **自定义主页宠物**
 
