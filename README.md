@@ -1404,3 +1404,50 @@ export class IronHelmet extends EquipmentPrototype {
 
 这样我们就可以测试一下套装效果了，当我们装备了一定数量的同词条（同源）装备后，装备可能会有一些特殊效果（额外的属性，攻击或者受击buff等）。
 
+### 自定义商品 (v1.0.2 以上版本)
+
+v1.0.2 以上的版本我们提供了自定义商品的功能，可以将已经存在的物品或者装备随机放到商店中出售，商品基础类是位于 **根目录/Script/Data/UserShoop.ts** 中的 GoodsType 类，我们的商品类就继承自该类。
+
+接下来我们来定义一个商品 (在 **根目录/Script/Mod/MyMod/Goods** 目录中新建一个文件 CheackPack.ts):
+
+代码内容如下:
+
+````typescript
+import { GoodsType, RegisterShoopGoods } from "../../../Data/UserShoop";
+import { EquipmentPrototype } from "../../../System/Prototype/EquipmentPrototype";
+import { ItemPrototype } from "../../../System/Prototype/ItemPrototype";
+import { CheatPack } from "../Item/CheatPack";
+
+// 注册到商店待出售列表
+@RegisterShoopGoods()
+// 继承 GoodsType 类
+export class CheatPackGoods extends GoodsType {
+	
+    // 物品 或者 装备 原型 这里我们使用之前的 CheatPack 物品原型
+    public get proto(): ItemPrototype | EquipmentPrototype {
+        return new CheatPack
+    }
+	
+    // 物品数量
+    public get num(): number {
+        return 1
+    }
+	
+    // 物品出现的机率 如果只有一个物品 那机率就是 100%
+    public get probability(): number {
+        return 0.3
+    }
+	
+    // 物品的售价 gold 金币 diamond 钻石
+    public get price(): { gold: number; diamond: number; } {
+        return { gold: 500 , diamond: 100 }
+    }
+
+}
+````
+
+之后我们刷新后就可以看到
+
+![](./README/21.png)
+
+商品出现在我们的商品列表中了。
